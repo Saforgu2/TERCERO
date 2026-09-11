@@ -1,0 +1,2 @@
+SZA/LAB_5/data/file128m filter=lfs diff=lfs merge=lfs -text
+SZA/LAB_5/file128m filter=lfs diff=lfs merge=lfs -text
