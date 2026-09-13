@@ -1,0 +1,56 @@
+# ERRONKA 1:
+7 errotazio atzera
+Mezua: Criptography is the discipline that embodies the principles, means, and methods for the
+transformation of data in order to hide their semantic content, prevent their
+unauthorized use, or prevent their undetected modification.
+
+# ERRONKA 2:
+16 Erroketa atzera
+#include <stdio.h>
+#include <string.h>
+
+void print_string (unsigned char a[], int len, int despl);
+
+
+int main() {
+        unsigned char cipher[1000]="Tfewzuvekzrczkp zj ivjvimzex rlkyfizqvu ivjkiztkzfej fe zewfidrkzfe rttvjj reu uzjtcfjliv, zetcluzex dvrej wfi gifkvtkzex gvijferc gizmrtp reu gifgizvkrip zewfidrkzfe. Zekvxizkp zj xlriuzex rxrzejk zdgifgvi zewfidrkzfe dfuzwztrkzfe fi uvjkiltkzfe, reu zetcluvj vejlizex zewfidrkzfe efe-ivgluzrkzfe reu rlkyvekztzkp. Rmrzcrszczkp zj vejlizex kzdvcp reu ivczrscv rttvjj kf reu ljv fw zewfidrkzfe.";
+        int len=strlen(cipher);
+        print_string(cipher,len,0);
+
+        //Rellenar el c�digo aqu�
+
+        // 97-122
+        for (int i = 1; i < 26; i++) {
+                print_string(cipher, len, i);
+        }
+
+        return 0;
+}
+
+void print_string (unsigned char a[], int len, int despl)
+{
+        int ken;
+        for (int i=0; i<len; i++)
+        {
+                if (a[i] == ',' || a[i] == '.' || a[i] == ' ') {
+                        ken = a[i];
+                }
+                else {
+                        ken = a[i] - despl;
+                        if (a[i] < 91) {
+                                if (ken < 65) {
+                                        ken = ken + 26;
+                                }
+                        }
+                        else {
+                                if (ken < 97) {
+                                        ken = ken + 26;
+                                }
+                        }
+                }
+                printf("%c", ken);
+        }
+
+        printf("\nErroketa: %d\n", despl);
+}
+
