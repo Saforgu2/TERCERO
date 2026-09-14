@@ -12,6 +12,7 @@
 #define MAX_VAL(a,b) (((a)>(b))?(a):(b))
 
 int hex_to_int(uint8_t c);
+int is_a_character (uint8_t c);
 uint8_t hex_pair_to_byte(uint8_t c, uint8_t d);
 void hex_string_to_bytes(const char *hex, uint8_t *bytes, size_t hex_len);
 void print_string_int(const uint8_t *a, size_t len);
@@ -19,8 +20,12 @@ void print_string_char(const uint8_t *a, size_t len);
 void print_printable_char(const uint8_t *a, size_t len);
 size_t array_max_value(const size_t *a, size_t len);
 void xor_bytes(const uint8_t *str1, const uint8_t *str2, uint8_t *out, size_t len);
-void find_key(const uint8_t *bytes[NUM_MSGS][MAX_MSG_BYTES], uint8_t *chances[NUM_MSGS][MAX_MSG_BYTES],
-			  uint8_t *key, size_t *len, int i);
+void find_key(const uint8_t bytes[NUM_MSGS][MAX_MSG_BYTES], int chances[NUM_MSGS][MAX_MSG_BYTES],
+			  size_t *len, int i);
+void search_result (int chances[NUM_MSGS][MAX_MSG_BYTES], const uint8_t *result, int i, int len);
+void create_key (const uint8_t bytes[NUM_MSGS][MAX_MSG_BYTES], const int chances[NUM_MSGS][MAX_MSG_BYTES],
+			  	 uint8_t *key, size_t *len, int column);
+void xor_c_with_space (uint8_t *key, uint8_t c, int column);
 
 int main()
 {
@@ -66,9 +71,38 @@ int main()
 	
 	//COMPLETE CODE HERE ...	
 
-	for (i = 0; i < NUM_MSGS - 1; i++)
+	for (i = 0; i < NUM_MSGS; i++)
 	{
-		find_key();
+		find_key(ciphertexts_bytes, chances_of_key, ciphertexts_len, i);
+	}
+
+	printf("\n\n\n\n\n");
+
+	for (i = 0; i < NUM_MSGS; i++)
+	{
+		for (int j = 0; j < ciphertexts_len[i]; j++)
+		{
+			printf("%d ", chances_of_key[i][j]);
+		}
+		printf("\n");
+	}
+
+	printf("\n\n\n\n\n");
+
+	for (i = 0; i < max_len; i++)
+	{
+		create_key(ciphertexts_bytes, chances_of_key, key, ciphertexts_len, i);
+		printf("%c", key[i]);
+	}
+
+	printf("\n\n\n\n\n");
+
+	for (i = 0; i < NUM_MSGS; i++)
+	{
+		uint8_t *tmp = malloc(ciphertexts_len[i] * sizeof(uint8_t));
+		xor_bytes(ciphertexts_bytes[i], key, tmp, ciphertexts_len[i]);
+		print_string_char(tmp, ciphertexts_len[i]);
+		free(tmp);
 	}
 	
 	free(key);
@@ -143,19 +177,61 @@ size_t array_max_value(const size_t *a, size_t len)
 	return temp_max;
 }
 
-void find_key(const uint8_t *bytes[NUM_MSGS][MAX_MSG_BYTES], uint8_t *chances[NUM_MSGS][MAX_MSG_BYTES],
-			  uint8_t *key, size_t *len, int i)
+void find_key(const uint8_t bytes[NUM_MSGS][MAX_MSG_BYTES], int chances[NUM_MSGS][MAX_MSG_BYTES],
+			  size_t *len, int i)
 {
-	for (int v = i; v < len[i]; v++)
+	for (int v = 0; v < NUM_MSGS; v++)
 	{
-		size_t shortest = (len[v] < len[i - 1]) ? len[v] : len[i - 1];
-		uint8_t xor_result = (uint8_t)malloc(shortest * sizeof(uint8_t));
-		xor_bytes(bytes[v], bytes[i - 1], xor_result, shortest);
-		search_result();
+		if (v == i) {
+			continue;
+		}
+		else {
+			size_t shortest = (len[v] < len[i]) ? len[v] : len[i];
+			uint8_t *xor_result = malloc(shortest * sizeof(uint8_t));
+			xor_bytes(bytes[v], bytes[i], xor_result, shortest);
+			search_result(chances, xor_result, i, shortest);
+			free(xor_result);
+		}
 	}
 }
 
-void search_result (uint8_t *chances[NUM_MSGS][MAX_MSG_BYTES], const uint8_t *result, int i, int v)
+void search_result (int chances[NUM_MSGS][MAX_MSG_BYTES], const uint8_t *result, int i, int len)
 {
-	
+	for (int w = 0; w < len; w++)
+	{
+		if (is_a_character(result[w])) {
+			chances[i][w] += 1;
+		}
+	}
+}
+
+int is_a_character (uint8_t c)
+{
+    	if ((c>='a' && c<='z') || (c>='A' && c<='Z'))
+    		return 1;
+    	return 0;
+}
+
+void create_key (const uint8_t bytes[NUM_MSGS][MAX_MSG_BYTES], const int chances[NUM_MSGS][MAX_MSG_BYTES],
+			  	 uint8_t *key, size_t *len, int column)
+{
+	int highest_chance = 0;
+	int best_row = 0;
+	for (int row = 0; row < NUM_MSGS; row++)
+	{
+		if (chances[row][column] == 0)
+			continue;
+		if (len[row] > column) {
+			if (chances[row][column] > highest_chance) {
+				highest_chance = chances[row][column];
+				best_row = row;
+			}
+		}
+	}
+	xor_c_with_space(key, bytes[best_row][column], column);
+}
+
+void xor_c_with_space (uint8_t *key, uint8_t c, int column)
+{
+	key[column] = c ^ ' ';
 }
