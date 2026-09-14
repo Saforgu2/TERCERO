@@ -19,13 +19,11 @@ void print_string_char(const uint8_t *a, size_t len);
 void print_printable_char(const uint8_t *a, size_t len);
 size_t array_max_value(const size_t *a, size_t len);
 void xor_bytes(const uint8_t *str1, const uint8_t *str2, uint8_t *out, size_t len);
-void find_key (const uint8_t *bytes[NUM_MSGS][MAX_MSG_BYTES], size_t len, int i, uint8_t *key);
-int compare_with_messages (int i, int v, uint8_t text, const uint8_t *ciphertexts_bytes);
+void find_key(const uint8_t *bytes[NUM_MSGS][MAX_MSG_BYTES], const uint8_t *chances[NUM_MSGS][MAX_MSG_BYTES]
+			  uint8_t *key, size_t *len, int i);
 
 int main()
 {
-	// ENCONTRAR CON XOR UN CHARACTER, POR LO TANTO EN ALGUNOS DE LOS TEXTOS ORIGINALES HAY ESE 
-	// CHARACTER
 	size_t i, z, j;
 	const uint8_t* ciphertexts_hex[NUM_MSGS]= {
 	"1a1617451a411517490b061b0f08535404044e17450c1c45326222420a00340006544816170b54030b55020d530046", 
@@ -45,6 +43,7 @@ int main()
 
 	size_t ciphertexts_len[NUM_MSGS];
 	uint8_t ciphertexts_bytes[NUM_MSGS][MAX_MSG_BYTES];
+	int chances_of_key[NUM_MSGS][MAX_MSG_BYTES];	
 	
 	printf("Mensajes cifrados:\n");
 	for (i=0; i<NUM_MSGS; i++)
@@ -63,16 +62,16 @@ int main()
 
 
 	size_t max_len = array_max_value(ciphertexts_len, NUM_MSGS);	
-	uint8_t* ciphertexts_key = malloc(max_len*sizeof(uint8_t));
+	uint8_t* key = malloc(max_len*sizeof(uint8_t));
 	
 	//COMPLETE CODE HERE ...	
 
-  for (i = 0; i < NUM_MSGS;  i++) 
-  {
-    find_key(ciphertexts_bytes, ciphertexts_len[i], i, ciphertexts_key);
-  }
-
-	free(ciphertexts_key);
+	for (i = 0; i < NUM_MSGS; i++)
+	{
+		find_key();
+	}
+	
+	free(key);
 	return 0;    
 }
 
@@ -142,23 +141,4 @@ size_t array_max_value(const size_t *a, size_t len)
 		temp_max = MAX_VAL(a[i], temp_max);
 	}
 	return temp_max;
-}
-
-void find_key (const uint8_t *bytes[NUM_MSGS][MAX_MSG_BYTES], size_t len, int i, uint8_t *key)
-{
-  for (int v = 0; v < len; v+=2)
-  {
-    compare_with_messages();
-  }
-}
-
-int compare_with_messages (int i, int v, uint8_t text, const uint8_t *ciphertexts_bytes)
-{
-  uint8_t xor_value;
-  for (int w = i; w < NUM_MSGS; w++)
-  {
-    xor_value = text ^ ciphertexts_bytes[w][v];
-    printf("%c\n", xor_value);
-  }
-  return 0;
 }
