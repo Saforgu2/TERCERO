@@ -19,7 +19,7 @@ void print_string_char(const uint8_t *a, size_t len);
 void print_printable_char(const uint8_t *a, size_t len);
 size_t array_max_value(const size_t *a, size_t len);
 void xor_bytes(const uint8_t *str1, const uint8_t *str2, uint8_t *out, size_t len);
-void find_key(const uint8_t *bytes[NUM_MSGS][MAX_MSG_BYTES], const uint8_t *chances[NUM_MSGS][MAX_MSG_BYTES]
+void find_key(const uint8_t *bytes[NUM_MSGS][MAX_MSG_BYTES], uint8_t *chances[NUM_MSGS][MAX_MSG_BYTES],
 			  uint8_t *key, size_t *len, int i);
 
 int main()
@@ -43,7 +43,7 @@ int main()
 
 	size_t ciphertexts_len[NUM_MSGS];
 	uint8_t ciphertexts_bytes[NUM_MSGS][MAX_MSG_BYTES];
-	int chances_of_key[NUM_MSGS][MAX_MSG_BYTES];	
+	int chances_of_key[NUM_MSGS][MAX_MSG_BYTES] = {0};	
 	
 	printf("Mensajes cifrados:\n");
 	for (i=0; i<NUM_MSGS; i++)
@@ -66,7 +66,7 @@ int main()
 	
 	//COMPLETE CODE HERE ...	
 
-	for (i = 0; i < NUM_MSGS; i++)
+	for (i = 0; i < NUM_MSGS - 1; i++)
 	{
 		find_key();
 	}
@@ -141,4 +141,21 @@ size_t array_max_value(const size_t *a, size_t len)
 		temp_max = MAX_VAL(a[i], temp_max);
 	}
 	return temp_max;
+}
+
+void find_key(const uint8_t *bytes[NUM_MSGS][MAX_MSG_BYTES], uint8_t *chances[NUM_MSGS][MAX_MSG_BYTES],
+			  uint8_t *key, size_t *len, int i)
+{
+	for (int v = i; v < len[i]; v++)
+	{
+		size_t shortest = (len[v] < len[i - 1]) ? len[v] : len[i - 1];
+		uint8_t xor_result = (uint8_t)malloc(shortest * sizeof(uint8_t));
+		xor_bytes(bytes[v], bytes[i - 1], xor_result, shortest);
+		search_result();
+	}
+}
+
+void search_result (uint8_t *chances[NUM_MSGS][MAX_MSG_BYTES], const uint8_t *result, int i, int v)
+{
+	
 }
