@@ -44,6 +44,12 @@ int main (void)
 	//IMPLEMENT MITM ATTACK
 	//...
 	//...
+
+	for (i = 0; i < iterations_k2; i++)
+	{
+		key2[0] = (uint8_t)i;
+		des(DECRYPTION, c1, &table[i * BLOCK_SIZE], key2);
+	}
 		
 	finish = clock();
 	time_taken = (double)(finish - start)/(double)CLOCKS_PER_SEC;
