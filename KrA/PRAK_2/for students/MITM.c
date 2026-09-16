@@ -48,12 +48,46 @@ int main (void)
 	for (i = 0; i < iterations_k2; i++)
 	{
 		key2[0] = (uint8_t)i;
-		des(DECRYPTION, c1, &table[i * BLOCK_SIZE], key2);
+		des(ENCRYPTION, p1, &table[i * BLOCK_SIZE], key2);
 	}
+
+	sort_blocks(table, k_index, iterations_k2);
+
+	uint8_t out[BLOCK_SIZE];
+
+	for (j = 0; j < iterations_k1; j++)
+	{
+		key1[0] = (uint8_t)(j >> 8);
+		key1[1] = (uint8_t)(j);
+
+		des(DECRYPTION, c1, out, key1);
 		
+		if ((cnt = search_in_blocks(table, iterations_k2, out)) != -1)
+		{
+			key2[0] = (uint8_t)(k_index[cnt]);
+			twodes(ENCRYPTION, p2, out, key1, key2);
+
+			if (memcmp(out, c2, BLOCK_SIZE) == 0)
+			{
+				twodes(ENCRYPTION, p3, out, key1, key2);
+
+				if (memcmp(out, c3, BLOCK_SIZE) == 0)
+					break;	
+			}
+		}
+		
+	}
+
+	twodes(DECRYPTION, p4, c4, key1, key2);
+
+	for (i = 0; i < BLOCK_SIZE; i++)
+	{
+		printf("%c", p4[i]);
+	}
+	
 	finish = clock();
 	time_taken = (double)(finish - start)/(double)CLOCKS_PER_SEC;
-	printf("Time DES: %f seg\n", time_taken);
+	printf("\nTime DES: %f seg\n", time_taken);
 	
 	free(k_index);
 	free(table);
