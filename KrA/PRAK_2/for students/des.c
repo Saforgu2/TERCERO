@@ -429,10 +429,14 @@ void des(uint8_t mode, uint8_t* in, uint8_t* out, uint8_t* key)
 
 void twodes(uint8_t mode, uint8_t* p, uint8_t* c, uint8_t* key1, uint8_t* key2) 
 {
+	uint8_t tmp[BLOCK_SIZE];
+
 	if(mode == ENCRYPTION){
-		
+		des(mode, p, tmp, key2);
+		des(mode, tmp, c, key1);
 	}
 	else if (mode == DECRYPTION){
-		
+		des(mode, c, tmp, key1);
+		des(mode, tmp, p, key2);
 	}
 }
