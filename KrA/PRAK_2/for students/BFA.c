@@ -30,6 +30,8 @@ int main (void)
 	uint8_t c4[BLOCK_SIZE]={0x46, 0x00, 0x16, 0xda, 0x57, 0xb2, 0x6a, 0xfd};
 	uint8_t p4[BLOCK_SIZE];
 
+	uint64_t i, j;
+	
 	clock_t start, finish;
 	double time_taken;
 	start = clock();
@@ -38,18 +40,44 @@ int main (void)
 	//...
 	//...
 
+	int found = 0;
+
+	uint8_t key1_out[DES_KEY_SIZE];
+	uint8_t key2_out[DES_KEY_SIZE];
+
 	for (i = 0; i < iterations_k2; i +=2)
 	{
 		key2[0] = (uint8_t)(i);
 		for (j = 0; j < iterations_k1; j+=2)
 		{
-			
+			key1[0] = (uint8_t)(j >> 8);
+			key1[1] = (uint8_t)(j);
+
+			des(DECRYPTION, c1, key1_out, key1);
+			des(ENCRYPTION, p1, key2_out, key2);
+
+			if (memcmp(key1_out, key2_out, DES_KEY_SIZE) == 0)
+			{
+				found = 1;
+				break;
+			}
+		}
+		if (found)
+			break;
+	}
+
+	if (found)
+	{
+		twodes(DECRYPTION, p4, c4, key1, key2);
+		for (i = 0; i < BLOCK_SIZE; i++)
+		{
+			printf("%c", p4[i]);
 		}
 	}
 	
 	finish = clock();
 	time_taken = (double)(finish - start)/(double)CLOCKS_PER_SEC;
-	printf("Time DES: %f seg\n", time_taken);
+	printf("\nTime DES: %f seg\n", time_taken);
 		
 	return 0;
 }
