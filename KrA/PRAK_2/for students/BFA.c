@@ -37,7 +37,16 @@ int main (void)
 	//IMPLEMENT BFA ATTACK
 	//...
 	//...
-		
+
+	for (i = 0; i < iterations_k2; i +=2)
+	{
+		key2[0] = (uint8_t)(i);
+		for (j = 0; j < iterations_k1; j+=2)
+		{
+			
+		}
+	}
+	
 	finish = clock();
 	time_taken = (double)(finish - start)/(double)CLOCKS_PER_SEC;
 	printf("Time DES: %f seg\n", time_taken);
