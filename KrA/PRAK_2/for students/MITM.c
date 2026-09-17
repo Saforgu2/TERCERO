@@ -45,7 +45,7 @@ int main (void)
 	//...
 	//...
 
-	for (i = 0; i < iterations_k2; i++)
+	for (i = 0; i < iterations_k2; i = i + 2)
 	{
 		key2[0] = (uint8_t)i;
 		des(ENCRYPTION, p1, &table[i * BLOCK_SIZE], key2);
@@ -55,7 +55,7 @@ int main (void)
 
 	uint8_t out[BLOCK_SIZE];
 
-	for (j = 0; j < iterations_k1; j++)
+	for (j = 0; j < iterations_k1; j = j + 2)
 	{
 		key1[0] = (uint8_t)(j >> 8);
 		key1[1] = (uint8_t)(j);
