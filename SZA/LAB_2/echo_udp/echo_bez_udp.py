@@ -27,11 +27,17 @@ while True:
 	"""
 	s.sendto(mezua.encode('utf-8'), zerb_helb)
 	buf, helbidea = s.recvfrom(1024)
+
+	if sys.argv[1] != helbidea[0]:
+	    continue;
 	
 	print(f'''Jasotako data: {buf.decode('utf-8')}
 Mezuaren luzeera (char): {len(buf.decode('utf-8'))}
 Mezuaren luzeera (byteetan): {len(buf)}
-Zerbitzariaren IP-a eta Portua: {helbidea}''')
+Zerbitzariaren IP-a eta Portua: {helbidea}
+Bezeroaren socketa: {s.getsockname()}''')
+
+
     
 """IKASLEAK BETETZEKO:
 Itxi socketa.
