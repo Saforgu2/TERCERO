@@ -2,7 +2,7 @@
 
 import socket
 
-PORT = 50007
+PORT = 0
 
 """IKASLEAK BETETZEKO:
 Sortu socketa eta esleitu helbide bat.
@@ -10,6 +10,10 @@ Sortu socketa eta esleitu helbide bat.
 
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.bind(('', PORT))
+
+helbidea, portua = s.getsockname()
+print(f'Helbidea: {helbidea}')
+print(f'Portua: {portua}')
 
 while True:
 	"""IKASLEAK BETETZEKO:
