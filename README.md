@@ -1,1 +1,6 @@
 # TERCERO
+# SZA
+# EHP
+# KrA
+# SSA
+# SES
