@@ -4,6 +4,13 @@
 #include <stdint.h>
 #include <string.h>
 
+#define BLOCK_SIZE 16
+#define SECOND_BLOCK_START 16
+#define BYTE_NUMBERS 256
+
+void calculate_intermediate (uint8_t *intermediate, uint8_t *modified_ciphertext, uint32_t cnt, uint8_t p_position, uint32_t clen);
+void calculate_cipher (uint8_t *intermediate, uint8_t *modified_ciphertext, uint32_t cnt, uint8_t p_position);
+
 int main(void)
 {
     // Initialize ciphertext in hex string form
@@ -38,9 +45,38 @@ int main(void)
     memcpy(modified_ciphertext, ciphertext, clen);
 
     // Complete padding oracle attack
+	
+	int32_t p_position; 
+	uint32_t cnt = 1;
+	uint8_t *intermediate = calloc(BLOCK_SIZE, sizeof(uint8_t));
     
+	for (p_position = BLOCK_SIZE - 1; p_position >= 0; p_position--)
+	{
+		calculate_intermediate(intermediate, modified_ciphertext, cnt, p_position, clen);
+		cnt++;
+	}
 
+	uint8_t my_name[] = "SAMI ULLAH";
+	uint32_t name_len = strlen(my_name);
+	uint8_t name_pad = BLOCK_SIZE - name_len;
+	uint8_t *new_p = calloc(BLOCK_SIZE, sizeof(uint8_t));
 
+	uint32_t i;
+	for (i = 0; i < name_len; i++)
+	{
+		new_p[i] = my_name[i];
+	}
+
+	for (i = name_len; i < BLOCK_SIZE; i++)
+	{
+		new_p[i] = name_pad;
+	}
+
+	for (i = 0; i < BLOCK_SIZE; i++)
+	{
+		modified_ciphertext[BLOCK_SIZE + i] =  intermediate[i] ^ new_p[i];
+	}
+	
     // Print the modified ciphertext after inserting "LIBEMORI"
     printf("Modified ciphertext (len=%d): ", clen);
     print_hex(modified_ciphertext, clen);
@@ -51,7 +87,32 @@ int main(void)
     // Free allocated memory
     free(ciphertext);
     free(modified_ciphertext);
+    free(intermediate);
+    free(new_p);
 
     return 0;
 }
 
+void calculate_intermediate (uint8_t *intermediate, uint8_t *modified_ciphertext, uint32_t cnt, uint8_t p_position, uint32_t clen)
+{
+	calculate_cipher(intermediate, modified_ciphertext, cnt, p_position);
+	uint32_t c_number;
+	for (c_number = 0; c_number < BYTE_NUMBERS; c_number++)
+	{
+		modified_ciphertext[SECOND_BLOCK_START + p_position] = (uint8_t)(c_number);
+		if (decipher_AES_CBC_PO(modified_ciphertext, clen) != 0)
+		{
+			break;
+		}
+	}
+	intermediate[p_position] = c_number ^ cnt;
+}
+
+void calculate_cipher (uint8_t *intermediate, uint8_t *modified_ciphertext, uint32_t cnt, uint8_t p_position)
+{
+	uint32_t c_position;
+	for (c_position = BLOCK_SIZE - 1; c_position > p_position; c_position--)
+	{
+		modified_ciphertext[SECOND_BLOCK_START + c_position] = intermediate[c_position] ^ cnt;
+	}
+}
