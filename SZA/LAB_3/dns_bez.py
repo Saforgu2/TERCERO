@@ -20,22 +20,21 @@ if __name__ == "__main__":
 
 	s = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )
 
-    buf = b'\x00\x63'  # ID
-    buf += b'\x01\x00' # Flags
-    buf += b'\x00\x01' # QDCOUNT
-    buf += b'\x00\x00' # ANCOUNT
-    buf += b'\x00\x00' # NSCOUNT
-    buf += b'\x00\x00' # ARCOUNT
+	buf = b'\x00\x63'  # ID
+	buf += b'\x01\x00' # Flags
+	buf += b'\x00\x01' # QDCOUNT
+	buf += b'\x00\x00' # ANCOUNT
+	buf += b'\x00\x00' # NSCOUNT
+	buf += b'\x00\x00' # ARCOUNT
+	# QNAME
+	for i in izena.split('.'): # DOMEINU IZENA
+	    buf += len(i).to_bytes(1, 'big') + i.encode('ascii')
 
-    # QNAME
-    for i in dns_zerb.split('.'): # DOMEINU IZENA
-        buf += len(i).to_bytes(1, 'big') + i.encode('ascii')
+	buf += b'\x00'
+	buf += b'\x00\x01' # QTYPE A es address (1)
+	buf += b'\x00\x01' # QCLASS IN es (1)
+	print(buf)
 
-    buf += '\x00'
-    buf += '\x00\x01' # QTYPE A es address (1)
-    buf += '\x00\x01' # QCLASS IN es (1)
-    
-        
 	"""IKASLEAK BETETZEKO:
 	DNS galdera prestatu. 2 atal hauek izango ditu:
 	Header section
@@ -55,6 +54,7 @@ if __name__ == "__main__":
 	pos = 0 # Erantzuneko zenbatgarren bytea aztertzea tokatzen zaigun gordeko du
 	        # buf aldagaitik eremu bat irakurtzen dugun bakoitzean eguneratu beharko da
 
+	print(buf)
 	"""IKASLEAK BETETZEKO:
 	DNS erantzuna interpretatu. 5 atal hauek izango ditu:
 	Header section
