@@ -33,7 +33,9 @@ if __name__ == "__main__":
 	buf += b'\x00'
 	buf += b'\x00\x01' # QTYPE A es address (1)
 	buf += b'\x00\x01' # QCLASS IN es (1)
+	sent_buf = buf.hex(':').split(':')
 	print(buf)
+	print(sent_buf[1][0])
 
 	"""IKASLEAK BETETZEKO:
 	DNS galdera prestatu. 2 atal hauek izango ditu:
