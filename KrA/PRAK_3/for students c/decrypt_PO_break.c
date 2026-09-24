@@ -62,15 +62,8 @@ int main(void)
 	uint8_t *new_p = calloc(BLOCK_SIZE, sizeof(uint8_t));
 
 	uint32_t i;
-	for (i = 0; i < name_len; i++)
-	{
-		new_p[i] = my_name[i];
-	}
-
-	for (i = name_len; i < BLOCK_SIZE; i++)
-	{
-		new_p[i] = name_pad;
-	}
+	memcpy(new_p, my_name, name_len);
+	memset(&new_p[name_len], name_pad, name_pad);
 
 	for (i = 0; i < BLOCK_SIZE; i++)
 	{
