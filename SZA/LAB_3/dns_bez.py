@@ -55,8 +55,22 @@ if __name__ == "__main__":
 	buf = s.recv(1024) # Erantzuna jaso
 	pos = 0 # Erantzuneko zenbatgarren bytea aztertzea tokatzen zaigun gordeko du
 	        # buf aldagaitik eremu bat irakurtzen dugun bakoitzean eguneratu beharko da
+	received_buf = buf.hex(':').split(':')
+	print(received_buf)
 
-	print(buf)
+	if sent_buf[0:2] != received_buf[0:2]:
+	    print('Ez dauka ID bera')
+	if buf[2] >= 128:
+	    print("Erantzun bat dago")
+	if received_buf[3][1] != '0':
+	    print('RCODE ez da 0')
+	if buf[6:7] == 0:
+	    print('Ez dago erantzunik')
+	    exit(1)
+	for i in range(12, len(buf)):
+	    if i == 0 a
+	
+    
 	"""IKASLEAK BETETZEKO:
 	DNS erantzuna interpretatu. 5 atal hauek izango ditu:
 	Header section
