@@ -5,7 +5,7 @@ import socket, sys
 """IKASLEAK BETETZEKO:
 DNS zerbitzariaren IP helbidea "/etc/resolv.conf" fitxategian aurkituko duzu.
 """
-ZERB_HELB = '127.0.0.53'
+ZERB_HELB = '100.100.1.1'
 ZERB_PORT = 53
 
 # Programa nagusia
@@ -35,7 +35,6 @@ if __name__ == "__main__":
 	buf += b'\x00\x01' # QCLASS IN es (1)
 	sent_buf = buf.hex(':').split(':')
 	print(buf)
-	print(sent_buf[1][0])
 
 	"""IKASLEAK BETETZEKO:
 	DNS galdera prestatu. 2 atal hauek izango ditu:
@@ -56,6 +55,7 @@ if __name__ == "__main__":
 	pos = 0 # Erantzuneko zenbatgarren bytea aztertzea tokatzen zaigun gordeko du
 	        # buf aldagaitik eremu bat irakurtzen dugun bakoitzean eguneratu beharko da
 	received_buf = buf.hex(':').split(':')
+	print(buf)
 	print(received_buf)
 
 	if sent_buf[0:2] != received_buf[0:2]:
@@ -67,8 +67,13 @@ if __name__ == "__main__":
 	if buf[6:7] == 0:
 	    print('Ez dago erantzunik')
 	    exit(1)
-	for i in range(12, len(buf)):
-	    if i == 0 a
+	for i in range(12, len(buf)): # QNAME aldakorra denez, \x00\x00 aurkitzean bukatzen da
+	    if buf[i] == 0 and buf[i + 1]:
+	        pos = i + 2;
+	        print(pos)
+	        break
+	pos += 4 # QTYPE eta QCLASS SALTATU
+	print(buf[pos:].decode())
 	
     
 	"""IKASLEAK BETETZEKO:
