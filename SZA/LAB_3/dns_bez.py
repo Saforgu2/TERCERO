@@ -64,16 +64,24 @@ if __name__ == "__main__":
 	    print("Erantzun bat dago")
 	if received_buf[3][1] != '0':
 	    print('RCODE ez da 0')
-	if buf[6:7] == 0:
+	if int.from_bytes(buf[6:8], 'big') == 0:
 	    print('Ez dago erantzunik')
 	    exit(1)
 	for i in range(12, len(buf)): # QNAME aldakorra denez, \x00\x00 aurkitzean bukatzen da
-	    if buf[i] == 0 and buf[i + 1]:
+	    if buf[i] == 0 and buf[i + 1] == 0:
 	        pos = i + 2;
 	        print(pos)
 	        break
 	pos += 4 # QTYPE eta QCLASS SALTATU
-	print(buf[pos:].decode())
+	for i in range(pos, len(buf)):          # QNAME Saltatu, Erantzunarena
+	    if buf[i] == 0 and buf[i + 1] == 0: # QNAME Ez da punteroa
+	        pos = i + 2
+	        break
+	    if buf[i] & 0xC0 == 0xC0:           # QNAME Punteroa da, hasieran bi bit 11 dira (0xC)
+	        pos = i + 2
+	        break
+	print(pos)
+	print(len(buf))
 	
     
 	"""IKASLEAK BETETZEKO:
