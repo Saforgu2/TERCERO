@@ -5,7 +5,7 @@ import socket, sys
 """IKASLEAK BETETZEKO:
 DNS zerbitzariaren IP helbidea "/etc/resolv.conf" fitxategian aurkituko duzu.
 """
-ZERB_HELB = '100.100.1.1'
+ZERB_HELB = '127.0.0.53'
 ZERB_PORT = 53
 
 # Programa nagusia
@@ -68,21 +68,26 @@ if __name__ == "__main__":
 	    print('Ez dago erantzunik')
 	    exit(1)
 	for i in range(12, len(buf)): # QNAME aldakorra denez, \x00\x00 aurkitzean bukatzen da
-	    if buf[i] == 0 and buf[i + 1] == 0:
-	        pos = i + 2;
+	    if buf[i] == 0:
+	        pos = i + 1;
 	        print(pos)
 	        break
 	pos += 4 # QTYPE eta QCLASS SALTATU
-	for i in range(pos, len(buf)):          # QNAME Saltatu, Erantzunarena
-	    if buf[i] == 0 and buf[i + 1] == 0: # QNAME Ez da punteroa
+	for i in range(pos, len(buf)):          # NAME Saltatu, Erantzunarena
+	    if buf[i] == 0:                     # NAME Ez da punteroa
+	        pos = i + 1
+	        break
+	    if buf[i] & 0xC0 == 0xC0:           # NAME Punteroa da, hasieran bi bit 11 dira (0xC)
 	        pos = i + 2
 	        break
-	    if buf[i] & 0xC0 == 0xC0:           # QNAME Punteroa da, hasieran bi bit 11 dira (0xC)
-	        pos = i + 2
-	        break
-	print(pos)
-	print(len(buf))
-	
+	if buf[pos + 1] != 1:
+	    print("Ez da A TYPE")
+	    TYPE = buf[pos: pos + 2]
+	pos += 2
+	if buf[pos + 1] != 1:
+	    print("Ez da IN CLASS")
+	pos += 8
+	print(socket.inet_ntoa(buf[pos:]))
     
 	"""IKASLEAK BETETZEKO:
 	DNS erantzuna interpretatu. 5 atal hauek izango ditu:
