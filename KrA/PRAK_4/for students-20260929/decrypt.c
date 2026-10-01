@@ -4,11 +4,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <time.h>
+#include <math.h>
+#include <pthread.h>
+#include <omp.h>
 #include "tiny_aes/aes.h"
 
 #define BLOCK_SIZE 16
 #define AES_KEY_LENGTH 32
-#define KEY_LENGTH 32 
+#define KEY_LENGTH 32
 #define RANGE 256
 
 uint8_t aux[BLOCK_SIZE];
@@ -86,8 +89,67 @@ uint32_t parse_mask(uint8_t *in, int64_t **key_mask){
 }
 
 void search(int64_t n_key_mask, int64_t *key_mask, int64_t n_plaintext_mask, int64_t *plaintext_mask, uint8_t *key, uint8_t *plain_text, uint8_t *cypher_text)
-{	
-	//RELLENA EL CODIGO
+{
+	uint64_t i;
+	uint64_t limit = (uint64_t)pow(2, 32);
+	uint8_t *iv_plain_xored = calloc(BLOCK_SIZE, sizeof(uint8_t));
+	uint8_t local_key[AES_KEY_LENGTH];
+	uint8_t plain_text_cpy[BLOCK_SIZE];
+	uint8_t found = 0;
+	struct AES_ctx ctx;
+	
+	for (i = 0; i < BLOCK_SIZE; i++)
+	{
+		iv_plain_xored[i] = iv[i] ^ plain_text[i];
+	}
+
+	memcpy(local_key, key, AES_KEY_LENGTH);
+
+	#pragma omp parallel for private(ctx, plain_text_cpy) firstprivate(local_key) num_threads(64)
+	for (i = 0; i < limit; i++)
+	{
+		#pragma omp atomic read
+		if (found) {
+			continue;
+		}
+		
+		local_key[key_mask[0]] =  (uint8_t)(i >> 24);
+		local_key[key_mask[1]] =  (uint8_t)(i >> 16);
+		local_key[key_mask[2]] =  (uint8_t)(i >> 8);
+		local_key[key_mask[3]] =  (uint8_t)(i);
+
+		memcpy(plain_text_cpy, plain_text, BLOCK_SIZE);
+		
+		AES_init_ctx_iv(&ctx, local_key, iv_plain_xored);
+		AES_CBC_encrypt_buffer(&ctx, plain_text_cpy, BLOCK_SIZE);
+
+		if (memcmp(cypher_text, plain_text_cpy, BLOCK_SIZE) == 0) {
+	        #pragma omp critical
+	        {
+	            if (!found) {
+	                found = 1;
+	                memcpy(key, local_key, AES_KEY_LENGTH);
+	                printf("SUCCESS!\n");
+	            }
+	    	}
+		}
+	}
+
+	printf("Giltza: ");
+	
+    for (i = 0; i < AES_KEY_LENGTH; i++)
+    {
+    	printf("%c", key[i]);
+    }
+
+	printf("\nGiltza (HEXA): ");
+
+    for (i = 0; i < AES_KEY_LENGTH; i++)
+	{
+		printf("%d", key[i]);
+	}
+
+	free(iv_plain_xored);
 }
 
 int main(int argc, char *argv[])
