@@ -92,20 +92,14 @@ void search(int64_t n_key_mask, int64_t *key_mask, int64_t n_plaintext_mask, int
 {
 	uint64_t i;
 	uint64_t limit = (uint64_t)pow(2, 32);
-	uint8_t *iv_plain_xored = calloc(BLOCK_SIZE, sizeof(uint8_t));
 	uint8_t local_key[AES_KEY_LENGTH];
 	uint8_t plain_text_cpy[BLOCK_SIZE];
 	uint8_t found = 0;
 	struct AES_ctx ctx;
-	
-	for (i = 0; i < BLOCK_SIZE; i++)
-	{
-		iv_plain_xored[i] = iv[i] ^ plain_text[i];
-	}
 
 	memcpy(local_key, key, AES_KEY_LENGTH);
 
-	#pragma omp parallel for private(ctx, plain_text_cpy) firstprivate(local_key) num_threads(64)
+	#pragma omp parallel for private(ctx, plain_text_cpy) firstprivate(local_key)
 	for (i = 0; i < limit; i++)
 	{
 		#pragma omp atomic read
@@ -120,7 +114,7 @@ void search(int64_t n_key_mask, int64_t *key_mask, int64_t n_plaintext_mask, int
 
 		memcpy(plain_text_cpy, plain_text, BLOCK_SIZE);
 		
-		AES_init_ctx_iv(&ctx, local_key, iv_plain_xored);
+		AES_init_ctx_iv(&ctx, local_key, iv);
 		AES_CBC_encrypt_buffer(&ctx, plain_text_cpy, BLOCK_SIZE);
 
 		if (memcmp(cypher_text, plain_text_cpy, BLOCK_SIZE) == 0) {
@@ -148,8 +142,6 @@ void search(int64_t n_key_mask, int64_t *key_mask, int64_t n_plaintext_mask, int
 	{
 		printf("%d", key[i]);
 	}
-
-	free(iv_plain_xored);
 }
 
 int main(int argc, char *argv[])
