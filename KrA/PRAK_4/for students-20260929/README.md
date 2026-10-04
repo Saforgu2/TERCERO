@@ -5,7 +5,7 @@ gcc decrypt.c -o decrypt tiny_aes/aes.c
 Key: 707269766174656b65796165736379706865726b7574786162616e6b00000000
 
 Plain text: 6f776e656462796b7574786162616e6b
-Cypher text: 7acac984301516fa801fd624d5889330
+Cypher text: 7acac984301516fa801fd624d5889330 # BIHAR GALDETU NONDIK ATERA DUEN
 Key mask length: 4
 Plaintext mask length: 0
 
