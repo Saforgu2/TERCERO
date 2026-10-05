@@ -100,7 +100,7 @@ void search(int64_t n_key_mask, int64_t *key_mask, int64_t n_plaintext_mask, int
 
 	memcpy(local_key, key, AES_KEY_LENGTH);
 
-	#pragma omp parallel for private(ctx, plain_text_cpy) firstprivate(local_key) num_threads(32)
+	#pragma omp parallel for private(ctx, plain_text_cpy) firstprivate(local_key)
 	for (i = 0; i < limit; i++)
 	{
 		#pragma omp atomic read
@@ -114,7 +114,7 @@ void search(int64_t n_key_mask, int64_t *key_mask, int64_t n_plaintext_mask, int
 		local_key[key_mask[3]] =  (uint8_t)(i);
 
 		#ifdef AESNI
-			enc_256_CBC(plain_text, plain_text_cpy, local_key, iv, BLOCK_SIZE);
+			enc_256_CBC(plain_text, plain_text_cpy, local_key, iv, 1);
 		#else
 			memcpy(plain_text_cpy, plain_text, BLOCK_SIZE);
 			AES_init_ctx_iv(&ctx, local_key, iv);
