@@ -8,6 +8,7 @@
 #include <pthread.h>
 #include <omp.h>
 #include "tiny_aes/aes.h"
+#include "libaesni/iaesni.h"
 
 #define BLOCK_SIZE 16
 #define AES_KEY_LENGTH 32
@@ -99,7 +100,7 @@ void search(int64_t n_key_mask, int64_t *key_mask, int64_t n_plaintext_mask, int
 
 	memcpy(local_key, key, AES_KEY_LENGTH);
 
-	#pragma omp parallel for private(ctx, plain_text_cpy) firstprivate(local_key)
+	#pragma omp parallel for private(ctx, plain_text_cpy) firstprivate(local_key) num_threads(32)
 	for (i = 0; i < limit; i++)
 	{
 		#pragma omp atomic read
@@ -112,11 +113,14 @@ void search(int64_t n_key_mask, int64_t *key_mask, int64_t n_plaintext_mask, int
 		local_key[key_mask[2]] =  (uint8_t)(i >> 8);
 		local_key[key_mask[3]] =  (uint8_t)(i);
 
-		memcpy(plain_text_cpy, plain_text, BLOCK_SIZE);
+		#ifdef AESNI
+			enc_256_CBC(plain_text, plain_text_cpy, local_key, iv, BLOCK_SIZE);
+		#else
+			memcpy(plain_text_cpy, plain_text, BLOCK_SIZE);
+			AES_init_ctx_iv(&ctx, local_key, iv);
+			AES_CBC_encrypt_buffer(&ctx, plain_text_cpy, BLOCK_SIZE);
+		#endif
 		
-		AES_init_ctx_iv(&ctx, local_key, iv);
-		AES_CBC_encrypt_buffer(&ctx, plain_text_cpy, BLOCK_SIZE);
-
 		if (memcmp(cypher_text, plain_text_cpy, BLOCK_SIZE) == 0) {
 	        #pragma omp critical
 	        {
