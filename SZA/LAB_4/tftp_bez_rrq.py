@@ -47,7 +47,7 @@ def get_file(s, serv_addr, filename):
 		    ack = ACK + expected_block.to_bytes(2, 'big')
 		    s.sendto(ack, zeb_helb)
 		    f.write(received[4:])
-		    if len(received[4:] < BLOCK_SIZE):
+		    if len(received[4:]) < BLOCK_SIZE:
 		        break
 		    expected_block += 1
 
