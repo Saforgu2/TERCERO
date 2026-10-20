@@ -80,8 +80,10 @@ int main(int argc, char *argv[])
 
 void HMAC_SHA256(uint8_t* key, int nbytes_key, uint8_t* P, int nbytes_P, uint8_t* HMAC)
 {
-	uint32_t size = sizeof(key) / sizeof(key[0]);
-	if (size <= SHA256_INPUT_SIZE) {
+	if (nbytes_key < SHA256_INPUT_SIZE) { // INPUT DA B
+		
+	}
+	else if (nbytes_key > SHA256_INPUT_SIZE) {
 		
 	}
 }
