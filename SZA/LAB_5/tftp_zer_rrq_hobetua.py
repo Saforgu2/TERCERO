@@ -17,6 +17,9 @@ PORT = 50069
 BLOCK_SIZE = 512
 FILES_PATH ='./data/'
 
+BERBIDALKETA = 3
+DENBORA = 0.5
+
 def send_error(s, addr, code, message):
 	resp  = ERROR
 	resp += code.to_bytes(2, 'big')
@@ -50,6 +53,18 @@ def send_file(s, addr, filename):
 		Ziurtatu bezeroaren mezua iritsi dela 500 ms-ren barruan. Bestela, birbidali azkeneko mezua.
 		3 aldiz saiatu ondoren ez badago bezeroaren berririk, amaitu prozesu umea.
 		"""
+		
+		for bidalketa in range(BERBIDALKETA):
+			received, _, _ = select.select([s], [], [], DENBORA)
+			if received:
+				break
+			print(f'Berbidaltzen: {bidalketa}\n')
+			s.send(resp)
+		else:
+			print('Bidalketa amaitzen')
+			send_error(s, addr, 0, 'ACK ez da lortu')
+			exit(1)
+
 		resp = s.recv(64)
 		opcode = resp[:2]
 		if opcode == ERROR:
@@ -62,7 +77,7 @@ def send_file(s, addr, filename):
 		# eta, beraz, konprobazioa ken daiteke
 		#elif opcode == RRQ:
 		#	send_error(s, cli_addr, 0, 'Cannot serve multiple clients.')
-		#elif opcode != ACK:
+		elif opcode != ACK:
 			print('Unexpected response.')
 			exit(1)
 		else:
