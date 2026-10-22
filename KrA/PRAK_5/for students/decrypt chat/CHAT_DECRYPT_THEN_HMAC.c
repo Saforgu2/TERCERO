@@ -80,12 +80,70 @@ int main(int argc, char *argv[])
 
 void HMAC_SHA256(uint8_t* key, int nbytes_key, uint8_t* P, int nbytes_P, uint8_t* HMAC)
 {
-	if (nbytes_key < SHA256_INPUT_SIZE) { // INPUT DA B
-		
+	SHA256_CTX ctx, ctx2;
+	BYTE buf2[SHA256_INPUT_SIZE];
+	BYTE buf3[SHA256_INPUT_SIZE];
+
+	uint8_t i;
+
+	uint8_t *k0   		 = calloc(SHA256_INPUT_SIZE, sizeof(uint8_t));
+	uint8_t *ipad 		 = calloc(SHA256_INPUT_SIZE, sizeof(uint8_t));
+	uint8_t *opad 		 = calloc(SHA256_INPUT_SIZE, sizeof(uint8_t));
+	uint8_t *ipad_result = malloc((SHA256_INPUT_SIZE + nbytes_P) * sizeof(uint8_t));
+	uint8_t *result		 = malloc((2*SHA256_INPUT_SIZE) * sizeof(uint8_t));
+
+
+	if (nbytes_key > SHA256_INPUT_SIZE) { // INPUT B DA
+		BYTE buf[SHA256_INPUT_SIZE];
+		sha256_init(&ctx);
+		sha256_update(&ctx, key, nbytes_key);
+		sha256_final(&ctx, buf);
+		memcpy(k0, buf, ctx.datalen);
 	}
-	else if (nbytes_key > SHA256_INPUT_SIZE) {
-		
+	else {
+		memcpy(k0, key, SHA256_INPUT_SIZE);
 	}
+
+	memcpy(ipad, k0, SHA256_INPUT_SIZE);
+	memcpy(opad, k0, SHA256_INPUT_SIZE);
+
+	// 1
+	for (i = 0; i < SHA256_INPUT_SIZE; i++)
+	{
+		ipad[i] = ipad[i] ^ IPAD;
+	}
+	// 2
+	memcpy(ipad_result, ipad, SHA256_INPUT_SIZE);
+	memcpy(&ipad_result[SHA256_INPUT_SIZE], P, nbytes_P);
+	// 3
+	sha256_init(&ctx);
+	sha256_update(&ctx, ipad_result, SHA256_INPUT_SIZE + nbytes_P);
+	sha256_final(&ctx, buf2);
+	// 4
+	for (i = 0; i < SHA256_INPUT_SIZE; i++)
+	{
+		opad[i] = opad[i] ^ OPAD;
+	}
+	// 5
+	memcpy(result, opad, SHA256_INPUT_SIZE);
+	memcpy(&result[SHA256_INPUT_SIZE], buf2, ctx.datalen);
+	// 6
+	sha256_init(&ctx2);
+	sha256_update(&ctx2, result, SHA256_INPUT_SIZE + ctx.datalen);
+	sha256_final(&ctx2, buf2);
+
+	if (memcmp(buf2, HMAC, ctx2.datalen) == 0) {
+		printf("TAG is Valid");
+	}
+	else {
+		printf("TAG is Invalid");
+	}
+
+	free(k0);
+	free(ipad);
+	free(opad);
+	free(ipad_result);
+	free(result);
 }
 
 

@@ -36,11 +36,12 @@ def send_file(s, addr, filename):
 	Erabili send funtzioa sendto funtzioaren ordez prozesu umean.
 	Erabili recv funtzioa recvfrom funtzioaren ordez prozesu umean.
 	"""
+	s.connect(addr)
 	data = f.read(BLOCK_SIZE)
 	resp  = DATA
 	resp += b'\x00\x01'
 	resp += data
-	s.sendto(resp, addr)
+	s.send(resp)
 
 	block_num = 1
 	last = False if len(data) == BLOCK_SIZE else True
@@ -49,7 +50,7 @@ def send_file(s, addr, filename):
 		Ziurtatu bezeroaren mezua iritsi dela 500 ms-ren barruan. Bestela, birbidali azkeneko mezua.
 		3 aldiz saiatu ondoren ez badago bezeroaren berririk, amaitu prozesu umea.
 		"""
-		resp, cli_addr = s.recvfrom(64)
+		resp = s.recv(64)
 		opcode = resp[:2]
 		if opcode == ERROR:
 			error_code = int.from_bytes(resp[2:4], 'big')
@@ -59,13 +60,9 @@ def send_file(s, addr, filename):
 		# beste bezero baten eskaera jasotzen.
 		# Zerbitzaria konkurrente bihurtzean connect erabiliko dugunez, ezinezkoa izango da hau gertatzea
 		# eta, beraz, konprobazioa ken daiteke
-		elif opcode == RRQ:
-			send_error(s, cli_addr, 0, 'Cannot serve multiple clients.')
-			if os.fork():
-			    pass
-			else:
-			    
-		elif opcode != ACK:
+		#elif opcode == RRQ:
+		#	send_error(s, cli_addr, 0, 'Cannot serve multiple clients.')
+		#elif opcode != ACK:
 			print('Unexpected response.')
 			exit(1)
 		else:
@@ -83,7 +80,7 @@ def send_file(s, addr, filename):
 			resp  = DATA
 			resp += block_num.to_bytes(2, 'big')
 			resp += data
-			s.sendto(resp, addr)
+			s.send(resp)
 			if len(data) < BLOCK_SIZE:
 				last = True
 			
@@ -94,6 +91,7 @@ if __name__ == '__main__':
 	"""IKASLEAK BETETZEKO: [Enuntziatuko 5. pausoa]
 	Deitu signal funtzioari zombie prozesuak ekiditeko.
 	"""
+	signal.signal(signal.SIGCHLD, signal.SIG_IGN)
 	s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 	s.bind(('', PORT))
 
@@ -114,4 +112,10 @@ if __name__ == '__main__':
 		Sortu prozesu ume bat socket berri bat sortu eta send_file funtzioari deitzeko.
 		Ez ahaztu prozesu umea hiltzen bere lana amaitutakoan.
 		"""
-		send_file(s, cli_addr, filename)
+		if os.fork():
+		    pass
+		else:
+		    s.close()
+		    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		    send_file(s, cli_addr, filename)
+		    exit(0)
