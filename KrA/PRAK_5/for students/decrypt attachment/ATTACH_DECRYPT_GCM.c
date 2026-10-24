@@ -83,7 +83,12 @@ int main(int argc, char *argv[])
 	printf("Output file %s generated correctly.\n\n", argv[4]);
 	
 	// Check if valid=1 and indicate if the received message is valid/not valid
-	printf("TAG IS VALID!\n");
+	if (valid) {
+		printf("TAG is VALID");
+	}
+	else {
+		printf("TAG is INVALID");
+	}
 	  
 	free(all); free(T); free(C); free(P); free(iv);
 	return(0);
