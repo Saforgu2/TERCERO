@@ -685,13 +685,11 @@ int AES_GCM_decrypt(uint8_t* buf, int nbytes_buf, const uint8_t* iv, int nbytes_
 	//if tag is not valid set buf to 0
 	uint8_t* S=calloc(AES_BLOCKLEN, sizeof(uint8_t));
 	calculate_S(buf, nbytes_buf, A, nbytes_A, H, S);
+	AES_CTR_xcrypt(S, AES_BLOCKLEN, J0, key);
 	
 	//DECRYPT buf with CTR (iv=inc32(J0))
 	J0[AES_BLOCKLEN-1] += 1;
 	AES_CTR_xcrypt(buf, nbytes_buf, J0, key);
-
-	J0[AES_BLOCKLEN-1] -= 1; //revert inc32(J0) 
-	AES_CTR_xcrypt(S, AES_BLOCKLEN, J0, key);
 
 	int valid = 1;
 	
