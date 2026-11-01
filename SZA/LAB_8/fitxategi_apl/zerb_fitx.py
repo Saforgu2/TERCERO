@@ -108,8 +108,47 @@ def session( s ):
 				sendOK( s )
 
 		elif message.startswith( szasar.Command.Upload ): # HONEK errore bat bidali behar
+			if state != State.Main:
+				sendER( s )
+				continue
+			if user == 0:
+				sendER( s, 7 )
+				continue
+			line = szasar.recvline( s ).decode( "ascii" )
+			if line:
+					fileinfo = line.split( '?' )
+					filesize = int( fileinfo[1] )
+					if filesize > MAX_FILE_SIZE:
+						sendER( s, 11 )
+						continue
+					direcsize = 0
+					for filename in os.listdir( FILES_PATH ):
+						direcsize += os.path.getsize( os.path.join( FILES_PATH, filename ) )
+					if direcsize + filesize > SPACE_MARGIN:
+						sendER( s, 10 )
+						continue
+					filename = fileinfo[0]
+			else:
+				sendER( s )
+				continue
+			state = State.Uploading
 			sendOK( s )
-			return
+
+		elif message.startswith( szasar.Command.Upload2 ): # HONEK errore bat bidali behar
+			if state != State.Uploading:
+				sendER( s )
+				continue
+			filedata = szasar.recvall( s, filesize )
+			try:
+				with open( os.path.join(FILES_PATH, filename), "wb" ) as f:
+					f.write( filedata )
+			except:
+				state = State.Main
+				sendER( s, 12 )
+				continue
+			else:
+				state = State.Main
+				sendOK( s )
 
 		elif message.startswith( szasar.Command.Exit ):
 			sendOK( s )

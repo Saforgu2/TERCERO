@@ -16,7 +16,9 @@ ER_MSG = (
 	"Erabiltzaile anonimoak ez dauka honetarako baimenik.",
 	"Arazoa fitxategia ezabatzean.", 
 	"Arazoa fitxategia igotzean.",
-	"Ez dago lekurik zerbitzarian.")
+	"Ez dago lekurik zerbitzarian.",
+	"Fitxategia luzeegia da.",
+	"Arazoa fitxategia diskoan gordetzean.")
 
 class Menua:
 	List, Download, Delete, Upload, Exit = range( 1, 6 )
@@ -102,7 +104,8 @@ if __name__ == "__main__":
 				if line:
 					filecount += 1
 					fileinfo = line.split( '?' )
-					print( "{:<20} {:>8}".format( fileinfo[0], int2bytes( int(fileinfo[1]) ) ) )
+					if fileinfo:
+						print( "{:<20} {:>8}".format( fileinfo[0], int2bytes( int(fileinfo[1]) ) ) )
 				else:
 					break
 			print( "-------------------------------" )
@@ -139,16 +142,33 @@ if __name__ == "__main__":
 			message = "{}{}\r\n".format( szasar.Command.Delete, filename )
 			s.sendall( message.encode( "ascii" ) )
 			message = szasar.recvline( s ).decode( "ascii" )
-			if not iserror( message ):
-				print( "'{}' fitxategia ezabatu da.".format( filename ) )
+			if iserror( message ):
+				continue
+			print( 'Baliozkoa da' )
 
 		elif option == Menua.Upload:
 			filename = input( "Idatzi igo nahi duzun fitxategiaren izena: " )
-			message = "{}{}\r\n".format( szasar.Command.Upload, filename )
+			if filename not in os.listdir(os.getcwd()):
+				print( 'Ez dago file hori' )
+				continue
+			filesize = os.path.getsize( filename )
+			message = "{}\r\n".format( szasar.Command.Upload )
+			message += "{}?{}\r\n".format( filename, filesize )
 			s.sendall( message.encode( "ascii" ) )
 			message = szasar.recvline( s ).decode ("ascii" )
 			if iserror( message ):
 				continue
+			try:
+				with open( filename, "rb" ) as f:
+					filedata = f.read()
+			except:
+				print(ER_MSG[9])
+			else:
+				message = "{}\r\n".format( szasar.Command.Upload2 )
+				s.sendall( message.encode('ascii') + filedata )
+				message = szasar.recvline( s ).decode ("ascii" )
+				if iserror:
+					continue
 
 		elif option == Menua.Exit:
 			message = "{}\r\n".format( szasar.Command.Exit )
