@@ -20,6 +20,16 @@ def main():
             else:
                 print(f'[{filename}]: Invalid signature.')
 
+    s1 = read_signatures('s1.txt')[0]
+    s2 = read_signatures('s2.txt')[0]
+
+    with open(os.path.join(FILES_PATH, 'ipsum.txt'), 'rb') as f:
+        x1 = f.read()
+    with open(os.path.join(FILES_PATH, 'lorem.txt'), 'rb') as f:
+        x2 = f.read()
+    
+    dsa.getkey(s1, s2, x1, x2)
+
 def read_signatures(filename):
     filenames = []
     signatures = []
