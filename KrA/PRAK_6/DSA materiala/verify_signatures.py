@@ -20,8 +20,10 @@ def main():
             else:
                 print(f'[{filename}]: Invalid signature.')
 
-    s1 = read_signatures('s1.txt')[0]
-    s2 = read_signatures('s2.txt')[0]
+    with open('s1.txt', 'rt') as f:
+        s1 = int(f.read().rstrip(), 16)
+    with open('s2.txt', 'rt') as f:
+        s2 = int(f.read().rstrip(), 16)
 
     with open(os.path.join(FILES_PATH, 'ipsum.txt'), 'rb') as f:
         x1 = f.read()

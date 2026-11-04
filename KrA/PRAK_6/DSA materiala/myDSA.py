@@ -118,12 +118,10 @@ class DSA:
         return v == r
 
     def getkey (self, signature1, signature2, x1, x2):
-        print('a')
         if not self.p:
             raise Exception('Cannot verify. Public key not set.')
 
         mask = int.from_bytes(b'\xff' * 20, 'big') 
-        print('k')
 
         r1 = signature1 >> 160
         s1 = signature1 & mask
@@ -135,7 +133,13 @@ class DSA:
         digest = hashlib.sha1(x2).digest()
         h2 = int.from_bytes(digest, 'big')
 
-        k = (pow(h1 - h2, 1, self.q) * pow(s1 - s2, -1, self.q)) % self.q
+        k = (pow(h1 - h2, 1, self.q) * pow(s1 - s2, -1, self.q))  % self.q
+        d = (pow((s1 * k) - h1, 1, self.q) * pow(r1, -1, self.q)) % self.q
+
+        r1_check = pow(self.alpha, k, self.p) % self.q
+
         print(k)
+        print(d)
+        print(r1 == r1_check)
 
             
