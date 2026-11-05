@@ -138,8 +138,11 @@ class DSA:
 
         r1_check = pow(self.alpha, k, self.p) % self.q
 
+        beta = pow(self.alpha, d, self.p)
+
         print(k)
         print(d)
         print(r1 == r1_check)
+        print(beta == self.beta)
 
             
